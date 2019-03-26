@@ -6,7 +6,7 @@ function start() {
     console.log("Welcome to our shop!")
     menu();
 }
-
+//Menu function
 function menu(){
     inquirer.prompt([
         {
@@ -15,10 +15,13 @@ function menu(){
             choices: ["Buy", "List new item", "Exit"],
             name: "action"
         }
-    ])
-
-    switch(userInput){
-        case "Buy": 
-        buyItem();
-    }
+    ]).then(function(response){
+//switch statement after the menu prompt
+switch(response.action){
+    case "Buy": 
+    buyItem();
 }
+    })
+    
+}
+
