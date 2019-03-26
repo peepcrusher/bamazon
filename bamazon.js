@@ -80,9 +80,63 @@ function buyItem(){
             type: "list",
             message: "Which item would you like to purchase?",
             choices: items,
-            name: "userChoice"
+            name: "item"
+        },
+        {
+            type: "input",
+            message: "How many would you like to buy?",
+            name: "num"
         }
-    ])
+    ]).then(function(response){
+        console.log(response.item, + response.num)
+        updateQuantities(response.item, response.num)
+
+    })
 }
     
-// }
+function updateQuantities(item, num){
+    var number = parseInt(num);
+    console.log(number)
+    var quantity = 
+    connection.query("UPDATE products SET ? WHERE ?",[
+        {
+            quantity: quantity - number
+        },
+        {
+            product: item
+        }
+    ], function(err){
+        if (err) throw err;
+
+        })
+}
+
+function listItem(){
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What would you like to sell?",
+            name: "product"
+        },
+        {
+            type: "input",
+            message: "How much does it cost?",
+            name: "price"
+        },
+        {
+            type: "input",
+            message: "How many do we have in stock?",
+            name: "quantity"
+        }
+    ]).then(function(response){
+        connection.query("INSERT INTO products SET ?",
+        {
+            product: response.product,
+            price: response.price,
+            quantity: response.quantity
+        })
+
+        console.log("Your item has been added");
+        menu();
+    })
+}
