@@ -127,6 +127,7 @@ function managerMode(){
     
 }
 
+//function for showing manager options
 function showManagerOptions(){
     inquirer.prompt([
         {
@@ -158,11 +159,14 @@ function showManagerOptions(){
     })
 }
 
+
+//function for showing the contents of the lowTable
 function showLowTable(){
     console.log(lowTable.toString());
     showManagerOptions();
 }
 
+//populates the items array used for choices in
 function populateItems() {
     connection.query("SELECT * FROM products", function (err, res) {
         if (err) throw err;
