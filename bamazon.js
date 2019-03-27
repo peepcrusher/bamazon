@@ -45,9 +45,10 @@ var items = []
 var bought;
 var stock;
 var price;
+var restock;
 //start up the store
 function start() {
-    console.log("Welcome to our shop!")
+    console.log("These are our wares")
     menu();
 }
 //Menu function
@@ -57,7 +58,7 @@ function menu() {
         {
             type: "list",
             message: "What would you like to do?",
-            choices: ["Buy", "List new item", "Exit"],
+            choices: ["Buy", "Manager Options", "Exit"],
             name: "action"
         }
     ]).then(function (response) {
@@ -69,10 +70,13 @@ function menu() {
                 populateItems();
                 break;
 
+            case "Manager Options":
+            managerMode();
+
             //if they chose to list a new item, run the list new item function
-            case "List new item":
-                listItem();
-                break;
+            // case "List new item":
+            //     listItem();
+            //     break;
 
             //if they chose to exit the app, say goodbye, and end the connection
             case "Exit":
@@ -85,6 +89,55 @@ function menu() {
 }
 
 //All Functions below this comment
+
+function managerMode(){
+    inquirer.prompt([
+     {
+         type: "input",
+         message: "What is the manager password?",
+         name: "password"
+     } ]
+     )
+
+    .then(function(response){
+        if(response.password === "farley"){
+            console.log("password accepted!")
+            showManagerOptions();
+        }
+
+        else if(response.password !== "farley"){
+            console.log("Sorry, your password is incorrect")
+            connection.end();
+        }
+
+    })
+    
+}
+
+function showManagerOptions(){
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What would you like to do?",
+            choices: ["Add an item to the store", "Update Quantities", "Exit"],
+            name: "action"
+        }
+    ]).then(function(response){
+        switch(response.action){
+            case "Add an item to the store":
+            listItem();
+            break;
+
+            case "Update Quantities":
+            updateWhichItem();
+            break;
+
+            case "Exit":
+            console.log("Goodbye!");
+
+        }
+    })
+}
 
 function populateItems() {
     connection.query("SELECT * FROM products", function (err, res) {
@@ -115,9 +168,50 @@ function buyItem() {
 
     })
 }
+//function for prompting the manager which item they would like to update
+function updateWhichItem(){
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "Which item would you like to add stock to?",
+            choices: items,
+            name: "item"
+        },
+        {
+            type: "input",
+            message: "How many would you like to add",
+            name: "num"
+        }
+    ]).then(function (response) {
+        updateItem(response.item, response.num)
+    })
+}
+
+//function to update item when updating the quantities
+function updateItem(item, num){
+    connection.query("SELECT * FROM products WHERE product=" + "'" + item + "'", function (err, res) {
+        if (err) throw err;
+        stock = res[0].quantity;
+        restock = parseInt(num)
+        price = res[0].price
+        var newQuantity = stock + restock;
+
+    
+        
+        //if they put negative number or 0, then say they can't do that, and take them back to the updateWhichItem Screen
+        if(restock <= 0){
+            console.log("You can't do that")
+            updateWhichItem()
+        }
+
+        else{
+        updateQuantities(item, newQuantity);
+        }
+    })
+}
 
 
-//function to get the new quantity 
+//function to get the new quantity FOR BUYING AN ITEM
 function getQuantity(item, num){
     connection.query("SELECT * FROM products WHERE product=" + "'" + item + "'", function (err, res) {
         if (err) throw err;
@@ -132,6 +226,7 @@ function getQuantity(item, num){
             menu();
         }
 
+        //if they're trying to buy negative items kick them out of the store
         else if(bought <= 0){
             console.log("you're really trying to buy negative items? What? Stop wasting my time and get out of here")
             connection.end();
