@@ -134,7 +134,12 @@ function getQuantity(item, num){
             menu();
         }
 
-        else if(bought <= stock)
+        else if(bought <= 0){
+            console.log("you're really trying to buy negative items? What? Goodbye")
+            connection.end();
+        }
+
+        else if(bought <= stock && bought > 0)
         updateQuantities(item, newQuantity);
     })
 }
