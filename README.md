@@ -6,7 +6,11 @@ This is a  command line application that simulates a store. With Bamazon you can
 
 ## Technologies Used
 
+* Node
 * Javascript
 * MySql
 * Inquirer
 * Cli-table2 
+* Chalk
+
+

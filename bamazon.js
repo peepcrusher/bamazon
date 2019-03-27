@@ -24,39 +24,44 @@ connection.connect(function (err) {
 })
 //create our nice and pretty looking table
 var table = new Table({
-    chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
-           , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
-           , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
-           , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
-  });
-  var lowTable = new Table({
-    chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
-           , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
-           , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
-           , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
-  });
-  lowTable.push(["ID", "Product", "Price", "Quantity"]);
-  function populateLowTable(){
-    connection.query("SELECT * FROM products WHERE quantity<=5", function (err, res) {
-      if (err) throw err;
-      for (var i = 0; i < res.length; i++) {
-          lowTable.push([res[i].id, res[i].product, res[i].price, res[i].quantity])
-      }
-  })
-  }
-//populate our nice, pretty table
-  table.push(["ID", "Product", "Price", "Quantity"]);
-function populateTable(){
-  connection.query("SELECT * FROM products", function (err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-        table.push([res[i].id, res[i].product, res[i].price, res[i].quantity])
+    chars: {
+        'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗'
+        , 'bottom': '═', 'bottom-mid': '╧', 'bottom-left': '╚', 'bottom-right': '╝'
+        , 'left': '║', 'left-mid': '╟', 'mid': '─', 'mid-mid': '┼'
+        , 'right': '║', 'right-mid': '╢', 'middle': '│'
     }
-    start();
-})
+});
+var lowTable = new Table({
+    chars: {
+        'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗'
+        , 'bottom': '═', 'bottom-mid': '╧', 'bottom-left': '╚', 'bottom-right': '╝'
+        , 'left': '║', 'left-mid': '╟', 'mid': '─', 'mid-mid': '┼'
+        , 'right': '║', 'right-mid': '╢', 'middle': '│'
+    }
+});
+lowTable.push(["ID", "Product", "Price", "Department", "Quantity"]);
+function populateLowTable() {
+    connection.query("SELECT * FROM products WHERE quantity<=5", function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            lowTable.push([res[i].id, res[i].product, res[i].price, res[i].department, res[i].quantity])
+        }
+    })
 }
-//variable to hold all the items in the store
+//populate our nice, pretty table
+table.push(["ID", "Product", "Price", "Department", "Quantity"]);
+function populateTable() {
+    connection.query("SELECT * FROM products", function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            table.push([res[i].id, res[i].product, res[i].price, res[i].department, res[i].quantity])
+        }
+        start();
+    })
+}
+//variable to hold all the items and departments in the store
 var items = []
+var departments = ["Toys and Games", "Music", "Food and Drink"];
 //variables to be used to update quantities
 var bought;
 var stock;
@@ -70,7 +75,7 @@ function start() {
 //Menu function
 function menu() {
     console.log(table.toString());
-    
+
     inquirer.prompt([
         {
             type: "list",
@@ -88,8 +93,8 @@ function menu() {
                 break;
 
             case "Manager Options":
-            managerMode();
-            break;
+                managerMode();
+                break;
 
             //if they chose to exit the app, say goodbye, and end the connection
             case "Exit":
@@ -103,32 +108,32 @@ function menu() {
 
 //All Functions below this comment
 
-function managerMode(){
+function managerMode() {
     inquirer.prompt([
-     {
-         type: "password",
-         message: "What is the manager password?",
-         name: "password"
-     } ]
-     )
+        {
+            type: "password",
+            message: "What is the manager password?",
+            name: "password"
+        }]
+    )
 
-    .then(function(response){
-        if(response.password === "farley"){
-            console.log("password accepted!")
-            showManagerOptions();
-        }
+        .then(function (response) {
+            if (response.password === "farley") {
+                console.log("password accepted!")
+                showManagerOptions();
+            }
 
-        else if(response.password !== "farley"){
-            console.log("Sorry, your password is incorrect")
-            connection.end();
-        }
+            else if (response.password !== "farley") {
+                console.log("Sorry, your password is incorrect")
+                connection.end();
+            }
 
-    })
-    
+        })
+
 }
 
 //function for showing manager options
-function showManagerOptions(){
+function showManagerOptions() {
     inquirer.prompt([
         {
             type: "list",
@@ -136,24 +141,24 @@ function showManagerOptions(){
             choices: ["Add an item to the store", "Update Quantities", "Show low quantity items", "Exit"],
             name: "action"
         }
-    ]).then(function(response){
+    ]).then(function (response) {
         console.log(response);
-        switch(response.action){
+        switch (response.action) {
             case "Add an item to the store":
-            listItem();
-            break;
+                listItem();
+                break;
 
             case "Update Quantities":
-            updateWhichItem();
-            break;
+                updateWhichItem();
+                break;
 
             case "Show low quantity items":
-            showLowTable();
-            break;
+                showLowTable();
+                break;
 
             case "Exit":
-            console.log("Goodbye!");
-            connection.end();
+                console.log("Goodbye!");
+                connection.end();
 
         }
     })
@@ -161,10 +166,12 @@ function showManagerOptions(){
 
 
 //function for showing the contents of the lowTable
-function showLowTable(){
+function showLowTable() {
     console.log(lowTable.toString());
     showManagerOptions();
 }
+
+
 
 //populates the items array used for choices in
 function populateItems() {
@@ -198,55 +205,56 @@ function buyItem() {
     })
 }
 //function for prompting the manager which item they would like to update
-function updateWhichItem(){
+function updateWhichItem() {
     connection.query("SELECT * FROM products", function (err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
             items.push(res[i].product)
         }
-    inquirer.prompt([
-        {
-            type: "list",
-            message: "Which item would you like to add stock to?",
-            choices: items,
-            name: "item"
-        },
-        {
-            type: "input",
-            message: "How many would you like to add",
-            name: "num"
-        }
-    ]).then(function (response) {
-        updateItem(response.item, response.num)
-    })
-}
-    )};
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Which item would you like to add stock to?",
+                choices: items,
+                name: "item"
+            },
+            {
+                type: "input",
+                message: "How many would you like to add",
+                name: "num"
+            }
+        ]).then(function (response) {
+            updateItem(response.item, response.num)
+        })
+    }
+    )
+};
 
 //function to update item when updating the quantities
-function updateItem(item, num){
+function updateItem(item, num) {
     connection.query("SELECT * FROM products WHERE product=" + "'" + item + "'", function (err, res) {
         if (err) throw err;
         stock = res[0].quantity;
         restock = parseInt(num);
         var newQuantity = stock + restock;
 
-    
-        
+
+
         //if they put negative number or 0, then say they can't do that, and take them back to the updateWhichItem Screen
-        if(restock <= 0){
+        if (restock <= 0) {
             console.log("You can't do that")
             updateWhichItem()
         }
 
-        else{
-        managerUpdateQuantities(item, newQuantity);
+        else {
+            managerUpdateQuantities(item, newQuantity);
         }
     })
 }
 
 //this updates the stock of whatever item was said in the updateItem 
 function managerUpdateQuantities(item, num) {
-    
+
     connection.query("UPDATE products SET ? WHERE ?", [
         {
             quantity: num
@@ -263,7 +271,7 @@ function managerUpdateQuantities(item, num) {
 
 
 //function to get the new quantity FOR BUYING AN ITEM
-function getQuantity(item, num){
+function getQuantity(item, num) {
     connection.query("SELECT * FROM products WHERE product=" + "'" + item + "'", function (err, res) {
         if (err) throw err;
         stock = res[0].quantity;
@@ -272,25 +280,25 @@ function getQuantity(item, num){
         var newQuantity = stock - bought;
 
         //make sure they can't buy more than is in stock
-        if(bought > stock) {
+        if (bought > stock) {
             console.log("Sorry, we don't have that many " + item + "(s)")
             menu();
         }
 
         //if they're trying to buy negative items kick them out of the store
-        else if(bought <= 0){
+        else if (bought <= 0) {
             console.log("you're really trying to buy negative items? What? Stop wasting my time and get out of here")
             connection.end();
         }
 
-        else if(bought <= stock && bought > 0)
-        updateQuantities(item, newQuantity);
+        else if (bought <= stock && bought > 0)
+            updateQuantities(item, newQuantity);
     })
 }
 //function to update quantities after something has been purchased
 function updateQuantities(item, num) {
 
-    
+
     connection.query("UPDATE products SET ? WHERE ?", [
         {
             quantity: num
@@ -318,6 +326,12 @@ function listItem() {
             name: "price"
         },
         {
+            type: "list",
+            message: "Which department is this in?",
+            choices: departments,
+            name: "department"
+        },
+        {
             type: "input",
             message: "How many do we have in stock?",
             name: "quantity"
@@ -327,6 +341,7 @@ function listItem() {
             {
                 product: response.product,
                 price: response.price,
+                department: response.department,
                 quantity: response.quantity
             })
 
@@ -335,7 +350,7 @@ function listItem() {
     })
 }
 
-function reset(){
+function reset() {
     bought = 0;
     stock = 0;
     items = [];
