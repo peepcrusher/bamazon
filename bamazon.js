@@ -20,6 +20,7 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     populateTable();
+    populateLowTable();
 })
 //create our nice and pretty looking table
 var table = new Table({
@@ -28,13 +29,28 @@ var table = new Table({
            , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
            , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
   });
+  var lowTable = new Table({
+    chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
+           , 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
+           , 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
+           , 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
+  });
+  lowTable.push(["ID", "Product", "Price", "Quantity"]);
+  function populateLowTable(){
+    connection.query("SELECT * FROM products WHERE quantity<=5", function (err, res) {
+      if (err) throw err;
+      for (var i = 0; i < res.length; i++) {
+          lowTable.push([res[i].id, res[i].product, res[i].price, res[i].quantity])
+      }
+  })
+  }
 //populate our nice, pretty table
-  table.push(["Product", "Price", "Quantity"]);
+  table.push(["ID", "Product", "Price", "Quantity"]);
 function populateTable(){
   connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
     for (var i = 0; i < res.length; i++) {
-        table.push([res[i].product, res[i].price, res[i].quantity])
+        table.push([res[i].id, res[i].product, res[i].price, res[i].quantity])
     }
     start();
 })
@@ -54,6 +70,7 @@ function start() {
 //Menu function
 function menu() {
     console.log(table.toString());
+    
     inquirer.prompt([
         {
             type: "list",
@@ -73,10 +90,6 @@ function menu() {
             case "Manager Options":
             managerMode();
             break;
-            //if they chose to list a new item, run the list new item function
-            // case "List new item":
-            //     listItem();
-            //     break;
 
             //if they chose to exit the app, say goodbye, and end the connection
             case "Exit":
@@ -93,7 +106,7 @@ function menu() {
 function managerMode(){
     inquirer.prompt([
      {
-         type: "input",
+         type: "password",
          message: "What is the manager password?",
          name: "password"
      } ]
@@ -119,10 +132,11 @@ function showManagerOptions(){
         {
             type: "list",
             message: "What would you like to do?",
-            choices: ["Add an item to the store", "Update Quantities", "Exit"],
+            choices: ["Add an item to the store", "Update Quantities", "Show low quantity items", "Exit"],
             name: "action"
         }
     ]).then(function(response){
+        console.log(response);
         switch(response.action){
             case "Add an item to the store":
             listItem();
@@ -132,11 +146,21 @@ function showManagerOptions(){
             updateWhichItem();
             break;
 
+            case "Show low quantity items":
+            showLowTable();
+            break;
+
             case "Exit":
             console.log("Goodbye!");
+            connection.end();
 
         }
     })
+}
+
+function showLowTable(){
+    console.log(lowTable.toString());
+    showManagerOptions();
 }
 
 function populateItems() {
@@ -146,6 +170,7 @@ function populateItems() {
             items.push(res[i].product)
         }
         buyItem();
+
     })
 }
 //funcion to buy an Item
@@ -198,8 +223,7 @@ function updateItem(item, num){
     connection.query("SELECT * FROM products WHERE product=" + "'" + item + "'", function (err, res) {
         if (err) throw err;
         stock = res[0].quantity;
-        restock = parseInt(num)
-        price = res[0].price
+        restock = parseInt(num);
         var newQuantity = stock + restock;
 
     
@@ -216,6 +240,7 @@ function updateItem(item, num){
     })
 }
 
+//this updates the stock of whatever item was said in the updateItem 
 function managerUpdateQuantities(item, num) {
     
     connection.query("UPDATE products SET ? WHERE ?", [
