@@ -72,7 +72,7 @@ function menu() {
 
             case "Manager Options":
             managerMode();
-
+            break;
             //if they chose to list a new item, run the list new item function
             // case "List new item":
             //     listItem();
@@ -170,6 +170,11 @@ function buyItem() {
 }
 //function for prompting the manager which item they would like to update
 function updateWhichItem(){
+    connection.query("SELECT * FROM products", function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            items.push(res[i].product)
+        }
     inquirer.prompt([
         {
             type: "list",
@@ -186,6 +191,7 @@ function updateWhichItem(){
         updateItem(response.item, response.num)
     })
 }
+    )};
 
 //function to update item when updating the quantities
 function updateItem(item, num){
@@ -205,8 +211,24 @@ function updateItem(item, num){
         }
 
         else{
-        updateQuantities(item, newQuantity);
+        managerUpdateQuantities(item, newQuantity);
         }
+    })
+}
+
+function managerUpdateQuantities(item, num) {
+    
+    connection.query("UPDATE products SET ? WHERE ?", [
+        {
+            quantity: num
+        },
+        {
+            product: item
+        }
+    ], function (err) {
+        if (err) throw err;
+        console.log("Restock Complete");
+        reset();
     })
 }
 
@@ -289,5 +311,6 @@ function reset(){
     stock = 0;
     items = [];
     price = 0;
+    restock = 0;
     menu();
 }
