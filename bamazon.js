@@ -111,7 +111,6 @@ function buyItem() {
             name: "num"
         }
     ]).then(function (response) {
-        console.log(response.item, + response.num)
         getQuantity(response.item, response.num)
 
     })
@@ -126,7 +125,6 @@ function getQuantity(item, num){
         bought = parseInt(num)
         price = res[0].price
         var newQuantity = stock - bought;
-        console.log(stock)
 
         //make sure they can't buy more than is in stock
         if(bought > stock) {
@@ -135,7 +133,7 @@ function getQuantity(item, num){
         }
 
         else if(bought <= 0){
-            console.log("you're really trying to buy negative items? What? Goodbye")
+            console.log("you're really trying to buy negative items? What? Stop wasting my time and get out of here")
             connection.end();
         }
 
