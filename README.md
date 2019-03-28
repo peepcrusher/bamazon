@@ -14,3 +14,6 @@ This is a  command line application that simulates a store. With Bamazon you can
 * Chalk
 
 
+## Demonstration
+
+![demo-gif](/bamazon-in-action.gif)

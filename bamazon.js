@@ -1,7 +1,8 @@
 //require inquirer 
 var inquirer = require("inquirer");
 var mysql = require("mysql");
-var Table = require("cli-table2")
+var Table = require("cli-table2");
+var chalk = require("chalk");
 //connection variable with the cridentials
 var connection = mysql.createConnection({
     host: "localhost",
@@ -31,6 +32,7 @@ var table = new Table({
         , 'right': '║', 'right-mid': '╢', 'middle': '│'
     }
 });
+//table for the low stock merchandise 
 var lowTable = new Table({
     chars: {
         'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗'
@@ -39,7 +41,9 @@ var lowTable = new Table({
         , 'right': '║', 'right-mid': '╢', 'middle': '│'
     }
 });
+//push headers to the low table
 lowTable.push(["ID", "Product", "Price", "Department", "Quantity"]);
+//function for populating the low table
 function populateLowTable() {
     connection.query("SELECT * FROM products WHERE quantity<=5", function (err, res) {
         if (err) throw err;
@@ -48,7 +52,7 @@ function populateLowTable() {
         }
     })
 }
-//populate our nice, pretty table
+//populate our nice, pretty table of all items
 table.push(["ID", "Product", "Price", "Department", "Quantity"]);
 function populateTable() {
     connection.query("SELECT * FROM products", function (err, res) {
@@ -119,12 +123,12 @@ function managerMode() {
 
         .then(function (response) {
             if (response.password === "farley") {
-                console.log("password accepted!")
+                console.log(chalk.green("password accepted!"));
                 showManagerOptions();
             }
 
             else if (response.password !== "farley") {
-                console.log("Sorry, your password is incorrect")
+                console.log(chalk.red("Sorry, your password is incorrect"));
                 connection.end();
             }
 
@@ -142,7 +146,6 @@ function showManagerOptions() {
             name: "action"
         }
     ]).then(function (response) {
-        console.log(response);
         switch (response.action) {
             case "Add an item to the store":
                 listItem();
@@ -264,7 +267,7 @@ function managerUpdateQuantities(item, num) {
         }
     ], function (err) {
         if (err) throw err;
-        console.log("Restock Complete");
+        console.log(chalk.green("Restock Complete"));
         reset();
     })
 }
@@ -281,7 +284,7 @@ function getQuantity(item, num) {
 
         //make sure they can't buy more than is in stock
         if (bought > stock) {
-            console.log("Sorry, we don't have that many " + item + "(s)")
+            console.log(chalk.red("Sorry, we don't have that many " + item + "(s)"))
             menu();
         }
 
@@ -308,7 +311,7 @@ function updateQuantities(item, num) {
         }
     ], function (err) {
         if (err) throw err;
-        console.log("you bought " + bought + " " + item + " for " + (price * bought) + " dollars!");
+        console.log(chalk.green("you bought " + bought + " " + item + " for " + (price * bought) + " dollars!"));
         reset();
     })
 }
@@ -345,7 +348,7 @@ function listItem() {
                 quantity: response.quantity
             })
 
-        console.log("Your item has been added");
+        console.log(chalk.green("Your item has been added"));
         reset();
     })
 }
